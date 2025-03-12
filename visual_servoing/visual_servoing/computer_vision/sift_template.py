@@ -2,6 +2,9 @@ import cv2
 import imutils
 import numpy as np
 
+from matplotlib import pyplot as plt
+
+
 #################### X-Y CONVENTIONS #########################
 # 0,0  X  > > > > >
 #
@@ -70,6 +73,12 @@ def cd_sift_ransac(img, template):
 
 		x_min = y_min = x_max = y_max = 0
 
+		transformed_corners = cv2.perspectiveTransform(pts, M)
+		transformed_reshaped = transformed_corners.reshape(-1, 2)
+
+		x_min, y_min = transformed_reshaped.min(axis=0)
+		x_max, y_max = transformed_reshaped.max(axis=0)
+
 		########### YOUR CODE ENDS HERE ###########
 
 		# Return bounding box
@@ -114,10 +123,38 @@ def cd_template_matching(img, template):
 		########## YOUR CODE STARTS HERE ##########
 		# Use OpenCV template matching functions to find the best match
 		# across template scales.
-
 		# Remember to resize the bounding box using the highest scoring scale
 		# x1,y1 pixel will be accurate, but x2,y2 needs to be correctly scaled
-		bounding_box = ((0,0),(0,0))
-		########### YOUR CODE ENDS HERE ###########
+
+
+		method = eval('cv2.TM_CCOEFF_NORMED')
+		res = cv2.matchTemplate(img_canny, resized_template, method)
+		min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+		# If the method is TM_SQDIFF or TM_SQDIFF_NORMED, take minimum
+		if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
+			top_left = min_loc
+		else:
+			top_left = max_loc
+
+		bottom_right = (top_left[0] + (w * 1 / scale), top_left[1] + (h * 1 / scale))
+
+		if (not best_match or max_val > best_match):
+			best_match = max_val
+
+			bounding_box = ((top_left[0], top_left[1]), (bottom_right[0], bottom_right[1]))
+
+			# Present if you want to see where the bounding boxes are being drawn
+			# best_top_left = tuple(map(int, bounding_box[0])) 
+			# best_bottom_right = tuple(map(int, bounding_box[1]))
+
+	# Present if you want to see where the bounding boxes are being drawn
+	# img_copy = img.copy()
+	# output_path = "output.jpg"
+
+	# cv2.rectangle(img_copy, best_top_left, best_bottom_right, (0, 255, 0), 2)
+	# cv2.imwrite(output_path, img_copy)
+
+	########### YOUR CODE ENDS HERE ###########
 
 	return bounding_box
