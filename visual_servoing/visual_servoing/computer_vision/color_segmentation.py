@@ -1,4 +1,4 @@
-import cv2
+import cv2 as cv
 import numpy as np
 
 #################### X-Y CONVENTIONS #########################
@@ -18,9 +18,9 @@ def image_print(img):
 	Helper function to print out images, for debugging. Pass them in as a list.
 	Press any key to continue.
 	"""
-	cv2.imshow("image", img)
-	cv2.waitKey(0)
-	cv2.destroyAllWindows()
+	cv.imshow("image", img)
+	cv.waitKey(0)
+	cv.destroyAllWindows()
 
 def cd_color_segmentation(img, template):
 	"""
@@ -33,10 +33,42 @@ def cd_color_segmentation(img, template):
 				(x1, y1) is the top left of the bbox and (x2, y2) is the bottom right of the bbox
 	"""
 	########## YOUR CODE STARTS HERE ##########
+	#initalize
+	min_x, max_x = 0,0
+	min_y, max_y = 0,0
+	hsv_img = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+	#Best ranges and contour selected so far
+	#Contour chosen: contour[0]
+	#Kernel size: 7,7 ; square
+	#lower_orange =  np.array([8, 100, 100])#online answer:[10, 50, 70]
+	#upper_orange = np.array([24,255,255])#online answer:[24, 255, 255]
 
-	bounding_box = ((0,0),(0,0))
+	lower_orange =  np.array([8, 100, 100])
+	upper_orange = np.array([24,255,255])
 
-	########### YOUR CODE ENDS HERE ###########
+	#Find orange pixels
+	orange_mask = cv.inRange(hsv_img, lower_orange, upper_orange)
+
+	#Open img (Erode then dilate)
+	kernel = cv.getStructuringElement(cv.MORPH_RECT,(7,7))
+	processed_mask = cv.morphologyEx(orange_mask, cv.MORPH_OPEN, kernel)
+	processed_mask = cv.morphologyEx(processed_mask, cv.MORPH_CLOSE, kernel)
+
+	#Counture and find bounding rect
+	contours, _ = cv.findContours(processed_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+	cnt = contours[0]
+	# cnt = max(contours, key=cv.contourArea)
+
+	x,y,w,h = cv.boundingRect(cnt)
+	bounding_box = ((x,y),(x + w, y + h))
+	########## YOUR CODE ENDS HERE ###########
 
 	# Return bounding box
 	return bounding_box
+
+# def main():
+# 	orange =  np.uint8([[[0,165,255 ]]])
+# 	hsv_orange = cv.cvtColor(orange, cv.COLOR_BGR2HSV)
+# 	print(f"{hsv_orange}")
+
+# main()
