@@ -59,8 +59,8 @@ class ConeDetector(Node):
         lower_middle_point =( (lower_left_corner[0] + lower_right_corner[0])/2, lower_right_corner[1] )
 
         cone_location_px_msg = ConeLocationPixel()
-        cone_location_px_msg.x_pos = lower_middle_point[0]
-        cone_location_px_msg.y_pos = lower_middle_point[1]
+        cone_location_px_msg.u = float(lower_middle_point[0])
+        cone_location_px_msg.v = float(lower_middle_point[1])
         
         self.cone_pub.publish(cone_location_px_msg)
 

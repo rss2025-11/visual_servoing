@@ -22,7 +22,7 @@ def image_print(img):
 	cv.waitKey(0)
 	cv.destroyAllWindows()
 
-def cd_color_segmentation(img, template):
+def cd_color_segmentation(img, template=None):
 	"""
 	Implement the cone detection using color segmentation algorithm
 	Input:
