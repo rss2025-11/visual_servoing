@@ -107,6 +107,12 @@ class ParkingController(Node):
 
         # YOUR CODE HERE
         # Populate error_msg with relative_x, relative_y, sqrt(x^2+y^2)
+        x_error = self.relative_x - self.parking_distance
+        y_error = self.relative_y
+        dist_error = np.sqrt(self.relative_x**2 + self.relative_y**2)
+        error_msg.x_error = x_error
+        error_msg.y_error = y_error
+        error_msg.distance_error = dist_error
 
         #################################
         
