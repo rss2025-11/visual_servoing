@@ -4,7 +4,7 @@ import rclpy
 from rclpy.node import Node
 import numpy as np
 
-from vs_msgs.msg import ConeLocation, ParkingError
+from vs_msgs.msg import ConeLocation, ParkingError, ConeLocationPixel
 from ackermann_msgs.msg import AckermannDriveStamped
 
 class ParkingController(Node):
@@ -24,10 +24,14 @@ class ParkingController(Node):
 
         self.create_subscription(ConeLocation, "/relative_cone", 
             self.relative_cone_callback, 1)
+        
+        self.create_subscription(ConeLocationPixel, "/relative_cone_px", self.relative_pixel_callback, 1)
 
         self.parking_distance = .75 # meters; try playing with this number!
         self.relative_x = 0
         self.relative_y = 0
+        
+        self.pixels = [None, None]
 
         self.get_logger().info("Parking Controller Initialized")
 
@@ -55,27 +59,27 @@ class ParkingController(Node):
         # compute lookahead distance
         look_ahead = np.sqrt(self.relative_x**2 + self.relative_y**2)
         look_ahead = min(2.0, look_ahead)
-        stop_condition = abs(self.relative_x - self.parking_distance) < self.DIST_TOL and abs(self.relative_y) < 0.1
+        angle_condition = abs(angle_to_goal) < self.ANGLE_TOL
+        stop_condition = abs(self.relative_x - self.parking_distance) < self.DIST_TOL and angle_condition
         angle = np.arctan(2*self.CAR_LENGTH*np.sin(angle_to_goal)/(look_ahead + 0.0000001))
-        # if abs(distance - self.parking_distance) < self.DIST_TOL and abs(angle_to_goal) < self.ANGLE_TOL:
-        if stop_condition and abs(angle_to_goal) < self.ANGLE_TOL:
- 
-            self.direction_state = 0
+        
+        
+        if self.pixels[0] == 0 and self.pixels[1] == 0:
+            drive_cmd.drive.speed = self.DRIVE_SPEED
+            drive_cmd.drive.steering_angle = np.pi/4
+            self.drive_pub.publish(drive_cmd)
+            return
+        if stop_condition:
+            drive_cmd.drive.speed = 0.0
+            self.drive_pub.publish(drive_cmd)
+            return
+        
         if self.relative_x > self.parking_distance + self.DIST_BUFFER:
-            # drive_cmd.drive.speed = self.DRIVE_SPEED
-            # drive_cmd.drive.steering_angle = angle
             self.direction_state = 1
-        elif self.relative_x <= self.parking_distance + self.DIST_BUFFER:
-            # drive_cmd.drive.speed = -self.DRIVE_SPEED
-            # drive_cmd.drive.steering_angle = -angle
+        elif self.relative_x < self.parking_distance:
             self.direction_state = -1
-        # if self.direction_state == 1:
-        # self.get_logger().info(f'angle to goal: {angle_to_goal} |')
         drive_cmd.drive.speed = self.DRIVE_SPEED * self.direction_state
-        drive_cmd.drive.steering_angle = self.direction_state * angle
-        # elif self.direction_state == -1:
-        #     drive_cmd.drive.speed = -self.DRIVE_SPEED
-        #     drive_cmd.drive.steering_angle = -angle    
+        drive_cmd.drive.steering_angle = self.direction_state * angle    
         # YOUR CODE HERE
         # Use relative position and your control law to set drive_cmd
 
@@ -83,6 +87,14 @@ class ParkingController(Node):
 
         self.drive_pub.publish(drive_cmd)
         self.error_publisher()
+
+    def relative_pixel_callback(self, msg):
+        """
+        Get the relative pixel values of the cone.
+        """
+        x_px = msg.u
+        y_px = msg.v
+        self.pixels = [x_px, y_px]
 
     def error_publisher(self):
         """
