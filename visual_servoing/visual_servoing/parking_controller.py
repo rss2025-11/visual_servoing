@@ -16,7 +16,7 @@ class ParkingController(Node):
     def __init__(self):
         super().__init__("parking_controller")
 
-        self.declare_parameter("drive_topic", "/drive")
+        self.declare_parameter("drive_topic", "/vesc/low_level/input/navigation")
         DRIVE_TOPIC = self.get_parameter("drive_topic").value # set in launch file; different for simulator vs racecar
 
         self.drive_pub = self.create_publisher(AckermannDriveStamped, DRIVE_TOPIC, 10)
@@ -31,7 +31,7 @@ class ParkingController(Node):
 
         self.get_logger().info("Parking Controller Initialized")
 
-        self.CAR_LENGTH = 0.5 # TODO: CHANGE BASED ON MEASUREMENT
+        self.CAR_LENGTH = 0.3429 # TODO: CHANGE BASED ON MEASUREMENT
         self.ANGLE_TOL = 0.1 # about 5 degrees
         self.DRIVE_SPEED = 0.5
         self.DIST_TOL = 0.05 # may be too small

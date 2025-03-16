@@ -64,8 +64,10 @@ class ConeDetector(Node):
         
         self.cone_pub.publish(cone_location_px_msg)
 
-        # debug_msg = self.bridge.cv2_to_imgmsg(image, "bgr8")
-        # self.debug_pub.publish(debug_msg)
+        cv2.rectangle(image, bounding_box[0], bounding_box[1], (0,0,255), 3)
+
+        debug_msg = self.bridge.cv2_to_imgmsg(image, "bgr8")
+        self.debug_pub.publish(debug_msg)
 
 def main(args=None):
     rclpy.init(args=args)

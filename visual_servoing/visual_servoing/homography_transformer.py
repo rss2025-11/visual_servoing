@@ -21,7 +21,8 @@ from vs_msgs.msg import ConeLocation, ConeLocationPixel
 
 ######################################################
 ## DUMMY POINTS -- ENTER YOUR MEASUREMENTS HERE
-PTS_IMAGE_PLANE = [[225.0, 220.0], [228.0, 179.0], [337.0, 172.0], [422.0, 193.0]]
+# PTS_IMAGE_PLANE = [[225.0, 220.0], [228.0, 179.0], [337.0, 172.0], [422.0, 193.0]]
+PTS_IMAGE_PLANE = [[323.0,340.0], [11.0, 245.0], [512.0, 262.0], [178.0,179.0], [450.0, 179.0], [319.0, 166.0]]
 ######################################################
 
 # PTS_GROUND_PLANE units are in inches
@@ -29,7 +30,8 @@ PTS_IMAGE_PLANE = [[225.0, 220.0], [228.0, 179.0], [337.0, 172.0], [422.0, 193.0
 
 ######################################################
 ## DUMMY POINTS -- ENTER YOUR MEASUREMENTS HERE
-PTS_GROUND_PLANE = [[16.6875, 11.25], [48.6875, 19.75], [57.1875, -1.0], [30.4375, -10.4]]
+# PTS_GROUND_PLANE = [[16.6875, 11.25], [48.6875, 19.75], [57.1875, -1.0], [30.4375, -10.4]] 
+PTS_GROUND_PLANE = [[12.0, 1.5], [21.5,21.5], [18.75, -8.75], [56.25, 22.5], [56.0, -21.0], [76.0, 0.0]]
 ######################################################
 
 METERS_PER_INCH = 0.0254
@@ -125,7 +127,7 @@ class HomographyTransformer(Node):
         self.marker_pub.publish(marker)
 
     def click_callback(self, msg):
-        # self.get_logger().info("Click received")
+        self.get_logger().info("Click received")
         u, v = msg.x, msg.y
         x, y = self.transformUvToXy(u, v)
         self.draw_marker(x, y, msg.header.frame_id)

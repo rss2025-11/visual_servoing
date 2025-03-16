@@ -40,7 +40,7 @@ def cd_color_segmentation(img, template=None):
 	#Best ranges and contour selected so far
 	#Contour chosen: contour[0]
 	#Kernel size: 7,7 ; square
-	#lower_orange =  np.array([8, 100, 100])#online answer:[10, 50, 70]
+	#lower_orange =  np.array([8, 100, 100])#online answer:[8, 50, 70]
 	#upper_orange = np.array([24,255,255])#online answer:[24, 255, 255]
 
 	lower_orange =  np.array([8, 100, 100])
@@ -56,11 +56,16 @@ def cd_color_segmentation(img, template=None):
 
 	#Counture and find bounding rect
 	contours, _ = cv.findContours(processed_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-	cnt = contours[0]
-	# cnt = max(contours, key=cv.contourArea)
 
-	x,y,w,h = cv.boundingRect(cnt)
-	bounding_box = ((x,y),(x + w, y + h))
+	if(len(contours) > 0):
+		# cnt = contours[0]
+		cnt = max(contours, key=cv.contourArea)
+
+		x,y,w,h = cv.boundingRect(cnt)
+		bounding_box = ((x,y),(x + w, y + h))
+
+	else: 
+		bounding_box = ((0,0),(0,0))
 	########## YOUR CODE ENDS HERE ###########
 
 	# Return bounding box
