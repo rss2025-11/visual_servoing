@@ -38,7 +38,7 @@ class ParkingController(Node):
         self.DIST_BUFFER = 0.5 
         self.direction_state = 1.0 # 1.0 is forward, -1 is backward
         
-    def relative_cone_callback(self, msg):
+    def relative_cone_callback(self, msg):  
         self.relative_x = msg.x_pos
         self.relative_y = msg.y_pos
         drive_cmd = AckermannDriveStamped()
@@ -65,7 +65,7 @@ class ParkingController(Node):
             # drive_cmd.drive.speed = self.DRIVE_SPEED
             # drive_cmd.drive.steering_angle = angle
             self.direction_state = 1
-        elif self.relative_x < self.parking_distance:
+        elif self.relative_x <= self.parking_distance + self.DIST_BUFFER:
             # drive_cmd.drive.speed = -self.DRIVE_SPEED
             # drive_cmd.drive.steering_angle = -angle
             self.direction_state = -1
