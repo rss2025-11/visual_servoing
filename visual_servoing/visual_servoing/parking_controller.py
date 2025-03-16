@@ -33,7 +33,11 @@ class ParkingController(Node):
 
         self.CAR_LENGTH = 0.5 # TODO: CHANGE BASED ON MEASUREMENT
         self.ANGLE_TOL = 0.1 # about 5 degrees
-        self.DRIVE_SPEED = 0.7
+        self.DRIVE_SPEED = 0.5
+        self.DIST_TOL = 0.05 # may be too small
+        self.DIST_BUFFER = 0.5 
+        self.direction_state = 1.0 # 1.0 is forward, -1 is backward
+        
     def relative_cone_callback(self, msg):
         self.relative_x = msg.x_pos
         self.relative_y = msg.y_pos
@@ -51,25 +55,27 @@ class ParkingController(Node):
         # compute lookahead distance
         look_ahead = np.sqrt(self.relative_x**2 + self.relative_y**2)
         look_ahead = min(2.0, look_ahead)
-
-        angle = np.arctan(2*self.CAR_LENGTH*np.sin(angle_to_goal)/look_ahead)
-
-        if (distance <= self.parking_distance):
-            if abs(angle_to_goal) < self.ANGLE_TOL:
-                drive_cmd.drive.speed = 0.0
-                self.drive_pub.publish(drive_cmd)
-                return
-            else: # If you are too close to the cone but not aligned
-                drive_cmd.drive.speed = -self.DRIVE_SPEED
-                drive_cmd.drive.steering_angle = -angle
-
-
-        else:
-            if look_ahead == 2.0:
-                self.get_logger().info(f"Lookahead is reduced to 2 | angle = {angle}")
-            # self.get_logger().info("finished computing")
-            drive_cmd.drive.steering_angle = angle
-            drive_cmd.drive.speed = self.DRIVE_SPEED # TODO: MAKE A PARAMETER
+        stop_condition = abs(self.relative_x - self.parking_distance) < self.DIST_TOL and abs(self.relative_y) < 0.1
+        angle = np.arctan(2*self.CAR_LENGTH*np.sin(angle_to_goal)/(look_ahead + 0.0000001))
+        # if abs(distance - self.parking_distance) < self.DIST_TOL and abs(angle_to_goal) < self.ANGLE_TOL:
+        if stop_condition and abs(angle_to_goal) < self.ANGLE_TOL:
+ 
+            self.direction_state = 0
+        if self.relative_x > self.parking_distance + self.DIST_BUFFER:
+            # drive_cmd.drive.speed = self.DRIVE_SPEED
+            # drive_cmd.drive.steering_angle = angle
+            self.direction_state = 1
+        elif self.relative_x < self.parking_distance:
+            # drive_cmd.drive.speed = -self.DRIVE_SPEED
+            # drive_cmd.drive.steering_angle = -angle
+            self.direction_state = -1
+        # if self.direction_state == 1:
+        # self.get_logger().info(f'angle to goal: {angle_to_goal} |')
+        drive_cmd.drive.speed = self.DRIVE_SPEED * self.direction_state
+        drive_cmd.drive.steering_angle = self.direction_state * angle
+        # elif self.direction_state == -1:
+        #     drive_cmd.drive.speed = -self.DRIVE_SPEED
+        #     drive_cmd.drive.steering_angle = -angle    
         # YOUR CODE HERE
         # Use relative position and your control law to set drive_cmd
 
