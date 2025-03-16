@@ -43,19 +43,36 @@ def cd_color_segmentation(img, template=None):
 	#lower_orange =  np.array([8, 100, 100])#online answer:[8, 50, 70]
 	#upper_orange = np.array([24,255,255])#online answer:[24, 255, 255]
 
-	lower_orange =  np.array([8, 100, 100])
-	upper_orange = np.array([24,255,255])
+	#New Best (3/16)
+	# counter: max
+	# kernel: 5x5
+	# lower = [8,200,80]
+	# upper_orange = (28,255,255)
+
+
+	#The 8, x, 80, allows for darker oranges to be picked up but not some reds
+	# the x,200,x prevents lighter browns from being registered
+	lower_orange =  np.array([8, 200, 80])
+
+	#28 allows for bright oranges to be picked up but not yellows
+	upper_orange = np.array([28,255,255])
 
 	#Find orange pixels
 	orange_mask = cv.inRange(hsv_img, lower_orange, upper_orange)
 
+	# image_print(orange_mask)
+
 	#Open img (Erode then dilate)
-	kernel = cv.getStructuringElement(cv.MORPH_RECT,(7,7))
+	kernel = cv.getStructuringElement(cv.MORPH_RECT,(5,5))
 	processed_mask = cv.morphologyEx(orange_mask, cv.MORPH_OPEN, kernel)
 	processed_mask = cv.morphologyEx(processed_mask, cv.MORPH_CLOSE, kernel)
 
+	# image_print(processed_mask)
+
 	#Counture and find bounding rect
 	contours, _ = cv.findContours(processed_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+	# cnt = contours[0]
+	cnt = max(contours, key=cv.contourArea)
 
 	if(len(contours) > 0):
 		# cnt = contours[0]
