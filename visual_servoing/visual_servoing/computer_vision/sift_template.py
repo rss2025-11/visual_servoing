@@ -39,7 +39,7 @@ def cd_sift_ransac(img, template):
 				(x1, y1) is the bottom left of the bbox and (x2, y2) is the top right of the bbox
 	"""
 	# Minimum number of matching features
-	MIN_MATCH = 10 # Adjust this value as needed
+	MIN_MATCH = 7 # Adjust this value as needed
 	# Create SIFT
 	sift = cv2.xfeatures2d.SIFT_create()
 
@@ -72,15 +72,16 @@ def cd_sift_ransac(img, template):
 		########## YOUR CODE STARTS HERE ##########
 
 		x_min = y_min = x_max = y_max = 0
+		
+		if (not M is None):
+			transformed_corners = cv2.perspectiveTransform(pts, M)
+			transformed_reshaped = transformed_corners.reshape(-1, 2)
 
-		transformed_corners = cv2.perspectiveTransform(pts, M)
-		transformed_reshaped = transformed_corners.reshape(-1, 2)
-
-		x_min, y_min = transformed_reshaped.min(axis=0)
-		x_max, y_max = transformed_reshaped.max(axis=0)
+			x_min, y_min = transformed_reshaped.min(axis=0)
+			x_max, y_max = transformed_reshaped.max(axis=0)
 
 		########### YOUR CODE ENDS HERE ###########
-
+		
 		# Return bounding box
 		return ((x_min, y_min), (x_max, y_max))
 	else:
